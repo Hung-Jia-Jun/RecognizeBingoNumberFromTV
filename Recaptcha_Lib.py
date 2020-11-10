@@ -21,6 +21,7 @@ import configparser
 
 model = load_model('Models/model.h5')
 
+
 def PredictImg(img):
     # 載入模型
     #縮放圖片大小
@@ -63,9 +64,8 @@ def boundleSort(contours, columnLength, imageType):
     #x軸（橫向）
     #y軸（直向）
     #只有第一個格狀列表不用做排序
-    if imageType != "1":
-        #做Y軸排序
-        contours = sorted(contours, key=lambda ctr: cv2.boundingRect(ctr)[1])
+    #做Y軸排序
+    contours = sorted(contours, key=lambda ctr: cv2.boundingRect(ctr)[1])
 
     boundle = []
     boundles = []
@@ -83,11 +83,8 @@ def boundleSort(contours, columnLength, imageType):
     splitRows = [boundle[i:i+columnLength]
                  for i in range(0, len(boundle), columnLength)]
     for bound in splitRows:
-        if imageType != "1":
-            # 使用Ｘ軸來排序
-            boundles.append(sorted(bound, key=lambda bound: bound[0]))
-        else:
-            boundles.append([bound[1], bound[0]])
+        # 使用Ｘ軸來排序
+        boundles.append(sorted(bound, key=lambda bound: bound[0]))
 
     return boundles
 
@@ -163,11 +160,11 @@ def imageProcess(img, THRESH_BINARY_TYPE, threshValue, area, columnLength, image
 
 def showRecognizeResult(img, THRESH_BINARY_TYPE, threshValue, area, columnLength, imageType):
     boundle, imageProcessDone, secondSplitImg = imageProcess(img=img,
-                                             THRESH_BINARY_TYPE=THRESH_BINARY_TYPE,
-                                             threshValue=threshValue,
-                                             area=area,
-                                             columnLength=columnLength,
-                                             imageType=imageType)
+                                                             THRESH_BINARY_TYPE=THRESH_BINARY_TYPE,
+                                                             threshValue=threshValue,
+                                                             area=area,
+                                                             columnLength=columnLength,
+                                                             imageType=imageType)
 
     #儲存所有號碼圖的辨識結果
     output = []
@@ -194,8 +191,11 @@ def showRecognizeResult(img, THRESH_BINARY_TYPE, threshValue, area, columnLength
 
 #傳入圖片與圖片類型
 
+
 config = configparser.ConfigParser()
 config.read('config.ini')
+
+
 def combineResult(img, imageType):
     print("Type:" + str(imageType))
     #圖片要辨識的類型，共八種
@@ -215,13 +215,13 @@ def combineResult(img, imageType):
 
     # img = Image.open(imageType + '_3.jpg')
     output, secondSplitImg = showRecognizeResult(img=img, THRESH_BINARY_TYPE=TYPE, threshValue=threshValue,
-                                 area=area, columnLength=columnLength, imageType=imageType)
+                                                 area=area, columnLength=columnLength, imageType=imageType)
     #每兩個數字為一排
     step = 2
     output = [output[i:i+step] for i in range(0, len(output), step)]
 
     #賽車與套圈圈的數字要做特別處理
-    if imageType == "4" or imageType == "5":
+    if imageType == "3" or imageType == "4":
         #因為有兩排，現在想先知道切片要切第一排與第二排要留多少
         otherRowItemIndex = 10 - (20 - len(output))
         # output.reverse()
@@ -243,7 +243,8 @@ def combineResult(img, imageType):
             except:
                 continue
         output = outSecondLine+outFirstLine
-
+        if len(output)==0:
+            import pdb; pdb.set_trace()
 
     outputStr = ""
     for ele in output:
@@ -255,15 +256,21 @@ def combineResult(img, imageType):
     return outputStr, secondSplitImg
 
 #取得下一次開獎的動畫
+
+
 def GetNextAni():
     #現在動畫  109063595%8 + 3 = 5(套圈圈)
-    r = requests.get("https://www.taiwanlottery.com.tw/Lotto/BINGOBINGO/drawing.aspx")
+    r = requests.get(
+        "https://www.taiwanlottery.com.tw/Lotto/BINGOBINGO/drawing.aspx")
 
     soup = BeautifulSoup(r.text, 'html.parser')
     div = soup.find(id="lblBBDrawTerm")
-    bingoNumber = int(div.text)
-    nextBingoAniType = (bingoNumber + 2) % 8
-    return nextBingoAniType
+    bingoNumber = int(div.text)+1
+    nextBingoAniType = (bingoNumber + 1) % 8
+    #返回現在動畫的類別與期數
+    return nextBingoAniType, bingoNumber
+
+
 if __name__ == "__main__":
     model = load_model('Models/model.h5')
     #輸入程式啟動時，下一個是什麼圖形
