@@ -31,7 +31,7 @@ def Record():
 
         #現在時間與啟動錄影時間>100秒就離開
         now = time.time()
-        if now - Start_time > 100:
+        if now - Start_time > 60:
             break
     # 釋放攝影機
     cap.release()
@@ -49,4 +49,7 @@ while True:
     #可以被5分鐘整除
     time.sleep(1)
     if result[4] % 5 == 0:
-        Record()
+        #秒數為30
+        if result[5] == 30:
+            #開始錄影
+            Record()

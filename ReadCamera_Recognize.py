@@ -22,8 +22,8 @@ def Record():
 
     # 輸出結果
     print(Start_time)
-    # 選擇第1隻攝影機
-    cap = cv2.VideoCapture(0)
+    # 選擇第2隻攝影機
+    cap = cv2.VideoCapture(1)
 
     file_object = open('recognizeResult.txt', 'a')
 
@@ -59,10 +59,11 @@ def Record():
             notRepeatNumber = []
             for num in recognizeResult.split(","):
                 if num not in bingoPeriods[bingoNumber]:
-                    if num != "":
+                    #如果辨識到的字元不是空值，且單一字元數量為2的話，才算是一個數字
+                    if num != "" and len(num)==2:
                         notRepeatNumber.append(num)
             #同時間只有一組數字會被辨識到，超過一個數字辨識都是錯誤
-            if len(notRepeatNumber) >= 2:
+            if len(notRepeatNumber) > 1:
                 #設定跳出迴圈再進來一次
                 continue
             for number in notRepeatNumber:
@@ -71,7 +72,7 @@ def Record():
 
         #現在時間與啟動錄影時間>65秒就離開
         now = time.time()
-        if now - Start_time > 65:
+        if now - Start_time > 55:
             try:
                 #寫Log紀錄檔 期數與開獎號碼（不重複）
                 file_object.write(str(bingoNumber) + "," +
@@ -109,6 +110,6 @@ while True:
 
     if result[4] % 5 == 0:
         #秒數為25
-        if result[5] == 25:
+        if result[5] == 30:
             #開始錄影
             Record()

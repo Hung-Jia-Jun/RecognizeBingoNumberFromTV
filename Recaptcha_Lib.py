@@ -6,6 +6,7 @@ import requests
 from PIL import Image
 from matplotlib import pyplot as plt
 import re
+import time
 import os
 import cv2
 import numpy as np
@@ -244,8 +245,13 @@ def combineResult(img, imageType):
                 continue
         output = outSecondLine+outFirstLine
         if len(output)==0:
-            import pdb; pdb.set_trace()
-
+            # 轉換為 struct_time 格式的本地時間
+            result = time.localtime(time.time())
+            _img = cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2BGR)
+            _img = cv2.cvtColor(cv2.UMat(_img), cv2.COLOR_RGB2GRAY)
+            cv2.imwrite(".\\nonRecognize_image\\{i}_{time}.jpg".format(i=str(
+                imageType), time=str(result[3])+"-"+str(result[4])+"-"+str(result[5])), _img)
+      
     outputStr = ""
     for ele in output:
         try:
