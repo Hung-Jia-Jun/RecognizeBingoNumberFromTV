@@ -37,8 +37,8 @@ if width<=2 or width>20 or width*height<70 \
         return False 
 
 4. ##### 套圈圈
-> area = (45, 190,
-        125, 395)
+> area = (32, 190,
+        106, 395)
 > #二值化
 ret,thresh1 = cv2.threshold(img,160,255,cv2.THRESH_BINARY_INV)
 if width<=2 or width>20 or width*height<70 \
@@ -46,8 +46,8 @@ if width<=2 or width>20 or width*height<70 \
         return False 
 
 5. ##### 舞龍舞獅
-> area = (185, 300,
-        580, 380)
+> area = (176, 300,
+        582, 380)
 > #二值化
 ret,thresh1 = cv2.threshold(img,180,255,cv2.THRESH_BINARY_INV)
 if width<=5 or width>20 or width*height<70 \

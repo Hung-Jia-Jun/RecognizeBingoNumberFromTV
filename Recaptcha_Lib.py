@@ -49,10 +49,10 @@ def PredictImg(img):
 #去除掉圖片的雜訊，使用filter來決定可不可以用
 
 
-def ImageFilter(width, height):
+def ImageFilter(width, height, widthMin, heightMin, widthMax, heightMax):
     # 面積太小就算雜訊
-    if width <= 3 or width > 20 or width*height < 70 \
-            or width*height > 400 or height <= 14 or height > 22 or height - width < 5:
+    if width <= widthMin or width > widthMax or width*height < 70 \
+            or width*height > 400 or height <= widthMax or height > heightMax or height - width < 5:
         return False
     else:
         return True
@@ -71,10 +71,15 @@ def boundleSort(contours, columnLength, imageType):
     boundle = []
     boundles = []
 
+    #輪廓框區域限制
+    widthMin = 
+    heightMin = 
+    widthMax = 
+    heightMax = 
     for i in range(0, len(contours)):
         x, y, width, height = cv2.boundingRect(contours[i])
         # 面積太小就算雜訊
-        if ImageFilter(width, height) == False:
+        if ImageFilter(width, height, widthMin, heightMin, widthMax, heightMax) == False:
             continue
         # print (x, y, width, height)
         #把符合規則的邊界存起來
@@ -104,10 +109,9 @@ def DrawBoundle(boundle, img, columnLength):
 
 
 def imageProcess(img, THRESH_BINARY_TYPE, threshValue, area, columnLength, imageType):
-    # plt.imshow(img)
-    # plt.title('original picture')
-    # plt.show()
 
+    #（left, upper, right, lower）
+    #(x_start,y_start,x_end,y_end)
     #切割掉不重要的區域
     crop_img = img.crop(area)
 
@@ -140,8 +144,7 @@ def imageProcess(img, THRESH_BINARY_TYPE, threshValue, area, columnLength, image
 
     secondSplitImg = imageProcessDone.copy()
     #把完全看不到文字只剩下填滿黑色的色塊版本去做輪廓辨識
-    Splitcontours, hierarchy = cv2.findContours(secondSplitImg,
-                                                cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+    _,Splitcontours, hierarchy = cv2.findContours(secondSplitImg, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
     #送去做Boundle排序
     boundle = boundleSort(contours=Splitcontours,
@@ -272,7 +275,7 @@ def GetNextAni():
     soup = BeautifulSoup(r.text, 'html.parser')
     div = soup.find(id="lblBBDrawTerm")
     bingoNumber = int(div.text)+1
-    nextBingoAniType = (bingoNumber + 1) % 8
+    nextBingoAniType = (bingoNumber + 2) % 8
     #返回現在動畫的類別與期數
     return nextBingoAniType, bingoNumber
 
