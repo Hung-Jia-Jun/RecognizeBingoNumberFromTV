@@ -110,9 +110,7 @@ class Slider(QWidget):
 		self.imageType = 0
 		self.columnLength = 20
 		
-		ll = QLabel("Status")
-		ll.setAlignment(Qt.AlignCenter)
-		self.layout.addWidget(ll)
+		
 		self.valueTextLabel = QLabel("")
 		self.valueTextLabel.setAlignment(Qt.AlignCenter)
 		self.layout.addWidget(self.valueTextLabel)
