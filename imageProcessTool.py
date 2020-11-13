@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import sys
+import traceback
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
@@ -230,6 +231,8 @@ class Slider(QWidget):
 
 			cv2.waitKey(1)
 		except Exception as e:
+			print(traceback.format_exc())
+			print(e)
 			pass
 	def valuechange(self):
 		imageType = self.comboBox.currentText()
@@ -297,6 +300,8 @@ class Slider(QWidget):
 			self.resize(300, 100)
 
 		except Exception as e:
+			print(traceback.format_exc())
+			print (e)
 			pass
 		# plt.imshow(imageProcessDone)
 		# plt.title('imageProcessDone')

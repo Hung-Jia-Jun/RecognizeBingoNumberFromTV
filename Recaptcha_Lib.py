@@ -153,7 +153,8 @@ def imageProcess(img, THRESH_BINARY_TYPE, threshValue, area, columnLength, image
 
     secondSplitImg = imageProcessDone.copy()
     #把完全看不到文字只剩下填滿黑色的色塊版本去做輪廓辨識
-    _,Splitcontours, hierarchy = cv2.findContours(secondSplitImg, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    Splitcontours, hierarchy = cv2.findContours(
+        secondSplitImg, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)[-2:]
 
     #送去做Boundle排序，並傳送輪廓限制
     boundle = boundleSort(contours=Splitcontours,
