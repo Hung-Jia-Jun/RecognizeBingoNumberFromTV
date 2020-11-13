@@ -107,7 +107,7 @@ while True:
 
 	#可以被5分鐘整除
 	time.sleep(1)
-
+	
 	if result[4] % 5 == 0:
 		#秒數為25
 		if result[5] == 30:

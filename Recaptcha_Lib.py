@@ -51,14 +51,23 @@ def PredictImg(img):
 
 def ImageFilter(width, height, widthMin, heightMin, widthMax, heightMax):
     # 面積太小就算雜訊
-    if width <= widthMin or width > widthMax or width*height < 70 \
-            or width*height > 400 or height <= widthMax or height > heightMax or height - width < 5:
+    if width <= widthMin or width > widthMax or height <= heightMin or height > heightMax or height - width < 5:
         return False
     else:
         return True
+    # if width <= widthMin or width > widthMax or width*height < 70 \
+    #         or width*height > 400 or height <= widthMax or height > heightMax or height - width < 5:
 
 
-def boundleSort(contours, columnLength, imageType):
+def boundleSort(contours, columnLength, imageType, 
+                widthMin,
+                heightMin,
+                widthMax,
+                heightMax,):
+
+
+
+
     # sortPatten = {x:0,y:1}
     # sort = [x,y]
 
@@ -71,11 +80,7 @@ def boundleSort(contours, columnLength, imageType):
     boundle = []
     boundles = []
 
-    #輪廓框區域限制
-    widthMin = 
-    heightMin = 
-    widthMax = 
-    heightMax = 
+  
     for i in range(0, len(contours)):
         x, y, width, height = cv2.boundingRect(contours[i])
         # 面積太小就算雜訊
@@ -108,7 +113,11 @@ def DrawBoundle(boundle, img, columnLength):
     return img
 
 
-def imageProcess(img, THRESH_BINARY_TYPE, threshValue, area, columnLength, imageType):
+def imageProcess(img, THRESH_BINARY_TYPE, threshValue, area, columnLength, imageType,
+                                                                    widthMin,
+                                                                    heightMin,
+                                                                    widthMax,
+                                                                    heightMax):
 
     #（left, upper, right, lower）
     #(x_start,y_start,x_end,y_end)
@@ -146,10 +155,14 @@ def imageProcess(img, THRESH_BINARY_TYPE, threshValue, area, columnLength, image
     #把完全看不到文字只剩下填滿黑色的色塊版本去做輪廓辨識
     _,Splitcontours, hierarchy = cv2.findContours(secondSplitImg, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-    #送去做Boundle排序
+    #送去做Boundle排序，並傳送輪廓限制
     boundle = boundleSort(contours=Splitcontours,
                           columnLength=columnLength,
-                          imageType=imageType)
+                          imageType=imageType,
+                            widthMin = widthMin,
+                            heightMin = heightMin,
+                            widthMax = widthMax,
+                            heightMax = heightMax,)
 
     secondSplitImg = DrawBoundle(boundle=boundle,
                                  img=secondSplitImg,
@@ -162,13 +175,22 @@ def imageProcess(img, THRESH_BINARY_TYPE, threshValue, area, columnLength, image
 #顯示辨識結果
 
 
-def showRecognizeResult(img, THRESH_BINARY_TYPE, threshValue, area, columnLength, imageType):
+def showRecognizeResult(img, THRESH_BINARY_TYPE, threshValue, area, columnLength, imageType, 
+                                                            widthMin,
+                                                            heightMin,
+                                                            widthMax,
+                                                            heightMax):         
+    
     boundle, imageProcessDone, secondSplitImg = imageProcess(img=img,
                                                              THRESH_BINARY_TYPE=THRESH_BINARY_TYPE,
                                                              threshValue=threshValue,
                                                              area=area,
                                                              columnLength=columnLength,
-                                                             imageType=imageType)
+                                                             imageType=imageType,
+                                                             widthMin = widthMin,
+                                                             heightMin = heightMin,
+                                                             widthMax = widthMax,
+                                                             heightMax = heightMax)
 
     #儲存所有號碼圖的辨識結果
     output = []
@@ -177,7 +199,7 @@ def showRecognizeResult(img, THRESH_BINARY_TYPE, threshValue, area, columnLength
         for j in range(len(boundle[i])):
             x, y, width, height = boundle[i][j]
             # 面積太小就算雜訊
-            if ImageFilter(width, height) == False:
+            if ImageFilter(width, height, widthMin, heightMin, widthMax, heightMax) == False:
                 continue
             newImage = _originalImg[y:y+height,
                                     x:x+width]
@@ -201,13 +223,14 @@ config.read('config.ini')
 
 
 def combineResult(img, imageType):
-    print("Type:" + str(imageType))
+    # print("Type:" + str(imageType))
     #圖片要辨識的類型，共八種
 
     #x軸（橫向）
     #y軸（直向）
-    #讀取切割區域的座標範圍
     _config = config[imageType]
+
+    #讀取切割區域的座標範圍
     area = tuple(int(value) for value in _config["area"].split(","))
 
     #讀取二值化閥值
@@ -217,9 +240,18 @@ def combineResult(img, imageType):
     #橫行直列的數量
     columnLength = int(_config["columnLength"])
 
+    #輪廓框區域限制
+    widthMin = int(_config["widthMin"])
+    heightMin = int(_config["heightMin"])
+    widthMax = int(_config["widthMax"])
+    heightMax = int(_config["heightMax"])
     # img = Image.open(imageType + '_3.jpg')
     output, secondSplitImg = showRecognizeResult(img=img, THRESH_BINARY_TYPE=TYPE, threshValue=threshValue,
-                                                 area=area, columnLength=columnLength, imageType=imageType)
+                                                 area=area, columnLength=columnLength, imageType=imageType,
+                                                 widthMin = widthMin,
+                                                 heightMin =heightMin, 
+                                                 widthMax = widthMax,
+                                                 heightMax =heightMax)
     #每兩個數字為一排
     step = 2
     output = [output[i:i+step] for i in range(0, len(output), step)]
@@ -287,7 +319,11 @@ if __name__ == "__main__":
     for i in range(8):
         imageType = firstPatten
         img = Image.open(str(imageType) + '_2.jpg')
-        combineResult(img=img, imageType=str(imageType))
+        outputStr, secondSplitImg = combineResult(img=img, imageType=str(imageType))
+        print (outputStr)
+        plt.imshow(secondSplitImg)
+        plt.title("secondSplitImg")
+        plt.show()
         firstPatten += 1
 
         #回到初始的類別
