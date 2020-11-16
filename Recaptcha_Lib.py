@@ -174,8 +174,6 @@ def imageProcess(img, THRESH_BINARY_TYPE, threshValue, area, columnLength, image
     return boundle, imageProcessDone, secondSplitImg
 
 #顯示辨識結果
-
-
 def showRecognizeResult(img, THRESH_BINARY_TYPE, threshValue, area, columnLength, imageType, 
                                                             widthMin,
                                                             heightMin,
@@ -307,17 +305,20 @@ def GetNextAni():
 
     soup = BeautifulSoup(r.text, 'html.parser')
     div = soup.find(id="lblBBDrawTerm")
-    bingoNumber = int(div.text)+1
+    bingoNumber = int(div.text)
+    
+    #返回現在動畫的類別與期數
+    return bingoNumber
+
+
+def fromBingoNumberGetImageType(bingoNumber):
     nextBingoAniType = (bingoNumber + 2) % 8
     #因為每個動畫結束時間不一樣，所以要有一個config來設定要錄影多久
     #從啟動錄影這個Process開始要13秒才能正式啟動Opencv的imshow
     #所以要依照不同動畫調整recordTime這個設定
     _config = config[str(nextBingoAniType)]
     recordTime = int(_config["recordTime"])
-    #返回現在動畫的類別與期數
-    return nextBingoAniType, bingoNumber, recordTime
-
-
+    return nextBingoAniType, recordTime
 if __name__ == "__main__":
     import pdb; pdb.set_trace()
     GetNextAni()

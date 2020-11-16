@@ -24,8 +24,8 @@ def Record():
 
 	file_object = open('recognizeResult.txt', 'a')
 
-	#儲存每期的開獎數字，網站顯示的是上期的，所以這期開獎數字要+1
-	bingoPeriods[bingoNumber] = []
+	#預設等待時間
+	recordTime = 60
 	i = 0
 	while(True):
 		# 從攝影機擷取一張影像
@@ -38,6 +38,23 @@ def Record():
 		i += 1
 		#每秒截一次圖
 		if i > 30:
+			if GetPeroids == False:
+				#現在的動畫類別與期數
+				bingoNumber = Recaptcha_Lib.GetNextAni()
+
+			
+				if len(bingoPeriods)>1:
+					#那就校正回下一個開獎號碼
+					bingoNumber = int(list(bingoPeriods.keys())[-1])+1
+
+				#如果賓果號碼有要校正，到這邊就已經校正結束了，現在就能判斷最終要用什麼切圖邊界
+				imageType, recordTime = Recaptcha_Lib.fromBingoNumberGetImageType(bingoNumber)
+				print("第{peroids}期，現在要開獎的動畫為：{aniType},預計錄製{recordTime}秒".format(
+					peroids=bingoNumber, aniType=Ani[str(imageType)], recordTime=recordTime))
+
+				bingoPeriods[bingoNumber] = []
+				GetPeroids = True
+
 			img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
 			# img = Image.open(str(imageType) + '_{index}.jpg'.format(index = str(j)))
 			recognizeResult, secondSplitImg = Recaptcha_Lib.combineResult(img=img,
@@ -46,13 +63,7 @@ def Record():
 			cv2.imshow('process done', secondSplitImg)
 
 			cv2.waitKey(1)
-			if GetPeroids == False:
-				#現在的動畫類別與期數
-				imageType, bingoNumber, recordTime = Recaptcha_Lib.GetNextAni()
-				print("第{peroids}期，現在要開獎的動畫為：{aniType}".format(
-					peroids=bingoNumber, aniType=Ani[str(imageType)]))
-				GetPeroids = True
-				
+			
 			filename = "{bingoNumber}_{AniName}_{imageType}_{hour}_{min}_{sec}".format(
 				bingoNumber=bingoNumber, AniName=Ani[str(imageType)], imageType=imageType, hour=time.localtime().tm_hour, min=time.localtime().tm_min, sec=time.localtime().tm_sec)
 
@@ -77,17 +88,21 @@ def Record():
 			# 	continue
 			for number in notRepeatNumber:
 				bingoPeriods[bingoNumber].append(number)
-			print(str(bingoNumber) + ":" + ','.join(bingoPeriods[bingoNumber]))
+			print(str(bingoNumber) + ":" +
+			      str(len(bingoPeriods[bingoNumber]))+"," + ','.join(bingoPeriods[bingoNumber]))
 			#因為辨識的夠清楚了，可以不用做篩選
 			# print(str(bingoNumber) + ":" + recognizeResult)
 
 		#現在時間與啟動錄影時間>recordTime秒就離開
 		now = time.time()
 		if now - Start_time > recordTime:
+			print("已錄製{recordTime}秒".format(recordTime=recordTime))
 			try:
 				#寫Log紀錄檔 期數與開獎號碼（不重複）
-				file_object.write(str(bingoNumber) + "," +
-								  ','.join(bingoPeriods[bingoNumber])+"\n")
+				file_object.write("{bingoPeriodsNumber}-{imageName}:{bingoPeriodsLength}_{bingoNumber}\n".format(bingoPeriodsNumber=bingoNumber,
+																												imageName=Ani[str(imageType)],
+																												bingoPeriodsLength=str(len(bingoPeriods[bingoNumber])),
+																												bingoNumber=','.join(bingoPeriods[bingoNumber])))
 				# file_object.write(str(bingoNumber) + ":" + recognizeResult+"\n")
 				file_object.close()
 			except:
@@ -116,9 +131,7 @@ while True:
 
 	# 輸出結果
 	print("目前分鐘:" + str(result[4]))
-
 	time.sleep(1)
-	
 	#可以被5分鐘整除
 	if result[4] % 5 == 0:
 		#秒數為25

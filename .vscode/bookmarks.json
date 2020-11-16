@@ -1,10 +1,10 @@
 [
 	{
-		"path": "$ROOTPATH$/Recaptcha_Lib.py",
+		"path": "$ROOTPATH$/ReadCamera_Recognize.py",
 		"bookmarks": [
 			{
-				"line": 314,
-				"column": 38,
+				"line": 41,
+				"column": 4,
 				"label": ""
 			}
 		]

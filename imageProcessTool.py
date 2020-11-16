@@ -181,8 +181,8 @@ class Slider(QWidget):
 	def loadValue(self):
 		
 		imageType = self.comboBox.currentText()
-		imageType = self.Ani[imageType]
-		_config = self.config[imageType]
+		self.imageType = self.Ani[imageType]
+		_config = self.config[self.imageType]
 		areaX_Start, areaY_Start, areaX_End, areaY_End = [
 			int(value) for value in _config["area"].split(",")]
 		threshValue = int(_config["threshValue"])
@@ -224,10 +224,15 @@ class Slider(QWidget):
                                                             heightMin=heightMin,
                                                             widthMax=widthMax,
                                                             heightMax=heightMax)
-			# 顯示圖片
+			recognizeResult, _ = combineResult(img=self.img,
+                                      imageType=str(self.imageType))
+			print(recognizeResult)
+			# # 顯示圖片
 			cv2.imshow('secondSplitImg', secondSplitImg)
 
 			cv2.waitKey(1)
+
+			
 		except Exception as e:
 			print(traceback.format_exc())
 			print(e)
@@ -291,6 +296,9 @@ class Slider(QWidget):
 																	 heightMin=heightMin,
 																	 widthMax=widthMax,
 																	 heightMax=heightMax)
+			recognizeResult, _ = combineResult(img=self.img,
+                                                   imageType=str(self.imageType))
+			print(recognizeResult)
 			# 顯示圖片
 			cv2.imshow('secondSplitImg', secondSplitImg)
 
