@@ -309,18 +309,25 @@ def GetNextAni():
     div = soup.find(id="lblBBDrawTerm")
     bingoNumber = int(div.text)+1
     nextBingoAniType = (bingoNumber + 2) % 8
+    #因為每個動畫結束時間不一樣，所以要有一個config來設定要錄影多久
+    #從啟動錄影這個Process開始要13秒才能正式啟動Opencv的imshow
+    #所以要依照不同動畫調整recordTime這個設定
+    _config = config[str(nextBingoAniType)]
+    recordTime = int(_config["recordTime"])
     #返回現在動畫的類別與期數
-    return nextBingoAniType, bingoNumber
+    return nextBingoAniType, bingoNumber, recordTime
 
 
 if __name__ == "__main__":
+    import pdb; pdb.set_trace()
+    GetNextAni()
     model = load_model('Models/model.h5')
     #輸入程式啟動時，下一個是什麼圖形
     firstPatten = int(input("請輸入下一個會顯示的動畫類型"))
     for i in range(8):
         imageType = firstPatten
         img = Image.open(str(imageType) + '_2.jpg')
-        outputStr, secondSplitImg = combineResult(img=img, imageType=str(imageType))
+        outputStr, secondSplitImg,recordTime = combineResult(img=img, imageType=str(imageType))
         print (outputStr)
         plt.imshow(secondSplitImg)
         plt.title("secondSplitImg")

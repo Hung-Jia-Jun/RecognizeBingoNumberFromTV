@@ -13,11 +13,8 @@ bingoPeriods = {}
 
 
 def Record():
-	#現在的動畫類別與期數
-	imageType, bingoNumber = Recaptcha_Lib.GetNextAni()
-	print("第{peroids}期，現在要開獎的動畫為：{aniType}".format(
-		peroids=bingoNumber, aniType=Ani[str(imageType)]))
-
+	GetPeroids = False
+	
 	Start_time = time.time()
 
 	# 輸出結果
@@ -49,34 +46,49 @@ def Record():
 			cv2.imshow('process done', secondSplitImg)
 
 			cv2.waitKey(1)
-			filename = "{hour}_{min}_{sec}".format(
-				hour=time.localtime().tm_hour, min=time.localtime().tm_min, sec=time.localtime().tm_sec)
-			cv2.imwrite("C:\\Users\\NO NAME\\Desktop\\out\\" +
-						filename+".jpg", frame)
-			i = 0
+			if GetPeroids == False:
+				#現在的動畫類別與期數
+				imageType, bingoNumber, recordTime = Recaptcha_Lib.GetNextAni()
+				print("第{peroids}期，現在要開獎的動畫為：{aniType}".format(
+					peroids=bingoNumber, aniType=Ani[str(imageType)]))
+				GetPeroids = True
+				
+			filename = "{bingoNumber}_{AniName}_{imageType}_{hour}_{min}_{sec}".format(
+				bingoNumber=bingoNumber, AniName=Ani[str(imageType)], imageType=imageType, hour=time.localtime().tm_hour, min=time.localtime().tm_min, sec=time.localtime().tm_sec)
 
+			# cv2.imwrite("C:\\Users\\NO NAME\\Desktop\\ReadCamera\\out\\" +
+			#             filename+".jpg", frame)
+
+			#因為不支援中文檔名，所以用imencode代替
+			cv2.imencode('.jpg', frame)[1].tofile(	"C:\\Users\\NO NAME\\Desktop\\ReadCamera\\out\\" + filename+".jpg")
+
+			i = 0
+			# print(recognizeResult)
 			#經過檢查後，可以被加入list的數字
 			notRepeatNumber = []
 			for num in recognizeResult.split(","):
 				if num not in bingoPeriods[bingoNumber]:
 					#如果辨識到的字元不是空值，且單一字元數量為2的話，才算是一個數字
-					if num != "" and len(num)==2:
+					if num != "":
 						notRepeatNumber.append(num)
 			#同時間只有一組數字會被辨識到，超過一個數字辨識都是錯誤
-			if len(notRepeatNumber) > 1:
-				#設定跳出迴圈再進來一次
-				continue
+			# if len(notRepeatNumber) > 1:
+			# 	bingoPeriods[bingoNumber].append(notRepeatNumber[1])
+			# 	continue
 			for number in notRepeatNumber:
 				bingoPeriods[bingoNumber].append(number)
 			print(str(bingoNumber) + ":" + ','.join(bingoPeriods[bingoNumber]))
+			#因為辨識的夠清楚了，可以不用做篩選
+			# print(str(bingoNumber) + ":" + recognizeResult)
 
-		#現在時間與啟動錄影時間>65秒就離開
+		#現在時間與啟動錄影時間>recordTime秒就離開
 		now = time.time()
-		if now - Start_time > 55:
+		if now - Start_time > recordTime:
 			try:
 				#寫Log紀錄檔 期數與開獎號碼（不重複）
 				file_object.write(str(bingoNumber) + "," +
 								  ','.join(bingoPeriods[bingoNumber])+"\n")
+				# file_object.write(str(bingoNumber) + ":" + recognizeResult+"\n")
 				file_object.close()
 			except:
 				import pdb
@@ -105,11 +117,11 @@ while True:
 	# 輸出結果
 	print("目前分鐘:" + str(result[4]))
 
-	#可以被5分鐘整除
 	time.sleep(1)
 	
+	#可以被5分鐘整除
 	if result[4] % 5 == 0:
 		#秒數為25
-		if result[5] == 30:
+		if result[5] == 16:
 			#開始錄影
 			Record()
