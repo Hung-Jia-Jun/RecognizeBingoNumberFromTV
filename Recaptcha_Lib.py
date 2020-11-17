@@ -168,9 +168,6 @@ def imageProcess(img, THRESH_BINARY_TYPE, threshValue, area, columnLength, image
     secondSplitImg = DrawBoundle(boundle=boundle,
                                  img=secondSplitImg,
                                  columnLength=20)
-    # plt.imshow(secondSplitImg)
-    # plt.title("secondSplitImg")
-    # plt.show()
     return boundle, imageProcessDone, secondSplitImg
 
 #顯示辨識結果
