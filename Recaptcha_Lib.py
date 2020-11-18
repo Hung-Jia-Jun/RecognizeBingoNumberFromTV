@@ -79,7 +79,6 @@ def boundleSort(contours, columnLength, imageType,
    
 
     boundle = []
-    boundles = []
 
   
     for i in range(0, len(contours)):
@@ -98,8 +97,10 @@ def boundleSort(contours, columnLength, imageType,
     #     for bound in boundle:
     #         x, y, _, _ = bund
     #         sortingBound.append(x,y)
+
     #list 分群
     splitRows = [boundle[i:i+columnLength] for i in range(0, len(boundle), columnLength)]
+    #boundles = []
     # for bound in splitRows:
     #     # 使用Ｘ軸來排序
     #     boundles.append(sorted(bound, key=lambda bound: bound[0]))

@@ -6,7 +6,10 @@ import Recaptcha_Lib
 from datetime import datetime
 from keras.models import load_model
 from PIL import Image
+import configparser
 
+config = configparser.ConfigParser()
+config.read('config.ini')
 #因為要依照數字個別輸出
 #所以要把歷史開獎期數存起來
 bingoPeriods = {}
@@ -42,12 +45,11 @@ def Record():
 		#每秒截一次圖
 		if i > 30:
 			if GetPeroids == False:
-				bingoNumber += 1
 				# if len(bingoPeriods)>1:
 				# 	#那就校正回下一個開獎號碼
 				# 	bingoNumber = int(list(bingoPeriods.keys())[-1])+1
 
-				#如果賓果號碼有要校正，到這邊就已經校正結束了，現在就能判斷最終要用什麼切圖邊界
+				#判斷最終要用什麼切圖邊界
 				imageType, recordTime = Recaptcha_Lib.fromBingoNumberGetImageType(bingoNumber)
 				print("第{peroids}期，現在要開獎的動畫為：{aniType},預計錄製{recordTime}秒".format(
 					peroids=bingoNumber, aniType=Ani[str(imageType)], recordTime=recordTime))
@@ -124,17 +126,30 @@ Ani = {"0": "格狀列表",
 			"6": "彩球",
 			"7": "魚"}
 
-
+#控制只執行一次去讀取要開始錄影的時間
+setStartTime = False
 while True:
 	# 轉換為 struct_time 格式的本地時間
 	result = time.localtime(time.time())
 
 	# 輸出結果
-	print("目前分鐘:" + str(result[4]))
+	print("目前時間: {hour}:{min}:{sec}" .format(hour = str(result[3]),
+												min = str(result[4]),
+												sec = str(result[5])))
 	time.sleep(1)
 	#可以被5分鐘整除
 	if result[4] % 5 == 0:
+		if setStartTime == False:
+			bingoNumber += 1
+			#判斷最終要用什麼切圖邊界
+			imageType, recordTime = Recaptcha_Lib.fromBingoNumberGetImageType(bingoNumber)
+
+			_config = config[str(imageType)]
+			#讀取要開始錄影的時間
+			startTime = int(_config["starttime"])
+			setStartTime = True
 		#秒數為25
-		if result[5] == 16:
+		if result[5] == startTime:
 			#開始錄影
 			Record()
+			setStartTime = False
