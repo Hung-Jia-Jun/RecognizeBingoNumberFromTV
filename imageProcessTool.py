@@ -172,6 +172,10 @@ class Slider(QWidget):
 		_config["widthMax"] = str(widthMax)
 		_config["heightMax"] = str(heightMax)
 		_config["thresh_binary_type"] = thresh_binary_type
+		_config["recordtime"] = _config["recordtime"]
+		_config["starttime"] = _config["starttime"]
+		
+
 		with open('config.ini', 'w') as configfile:    # save
 			self.config.write(configfile)
 		print ("Save")

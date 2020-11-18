@@ -65,17 +65,20 @@ def boundleSort(contours, columnLength, imageType,
                 widthMax,
                 heightMax,):
     
+    #格狀列表要另外處理
+    if imageType == "0":
+        #做X軸排序（直向）
+        contours = sorted(contours, key=lambda ctr: cv2.boundingRect(ctr)[0])
+    else:
+        #x軸（橫向）
+        #y軸（直向）
+        #只有第一個格狀列表不用做排序
+        #做X軸排序（直向）
+        contours = sorted(contours, key=lambda ctr: cv2.boundingRect(ctr)[0])
 
-
-    #x軸（橫向）
-    #y軸（直向）
-    #只有第一個格狀列表不用做排序
-    #做X軸排序（直向）
-    contours = sorted(contours, key=lambda ctr: cv2.boundingRect(ctr)[0])
-
-    #做Y軸排序（橫向）
-    contours = sorted(contours, key=lambda ctr: cv2.boundingRect(ctr)[1])
-    
+        #做Y軸排序（橫向）
+        contours = sorted(contours, key=lambda ctr: cv2.boundingRect(ctr)[1])
+        
    
 
     boundle = []
@@ -293,7 +296,8 @@ def combineResult(img, imageType):
             _img = cv2.cvtColor(cv2.UMat(_img), cv2.COLOR_RGB2GRAY)
             cv2.imwrite(".\\nonRecognize_image\\{i}_{time}.jpg".format(i=str(
                 imageType), time=str(result[3])+"-"+str(result[4])+"-"+str(result[5])), _img)
-      
+   
+
     outputStr = ""
     for ele in output:
         try:
