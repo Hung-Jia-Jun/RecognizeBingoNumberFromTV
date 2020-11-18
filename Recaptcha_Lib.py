@@ -64,18 +64,19 @@ def boundleSort(contours, columnLength, imageType,
                 heightMin,
                 widthMax,
                 heightMax,):
+    
 
-
-
-
-    # sortPatten = {x:0,y:1}
-    # sort = [x,y]
 
     #x軸（橫向）
     #y軸（直向）
     #只有第一個格狀列表不用做排序
-    #做Y軸排序
+    #做X軸排序（直向）
+    contours = sorted(contours, key=lambda ctr: cv2.boundingRect(ctr)[0])
+
+    #做Y軸排序（橫向）
     contours = sorted(contours, key=lambda ctr: cv2.boundingRect(ctr)[1])
+    
+   
 
     boundle = []
     boundles = []
@@ -90,17 +91,24 @@ def boundleSort(contours, columnLength, imageType,
         #把符合規則的邊界存起來
         boundle.append([x, y, width, height])
 
-    #list 分群
-    splitRows = [boundle[i:i+columnLength]
-                 for i in range(0, len(boundle), columnLength)]
-    for bound in splitRows:
-        # 使用Ｘ軸來排序
-        boundles.append(sorted(bound, key=lambda bound: bound[0]))
 
-    return boundles
+    #格狀列表要用特別的sort 方式
+    # if imageType == "0":
+    #     sortingBound = []
+    #     for bound in boundle:
+    #         x, y, _, _ = bund
+    #         sortingBound.append(x,y)
+    #list 分群
+    splitRows = [boundle[i:i+columnLength] for i in range(0, len(boundle), columnLength)]
+    # for bound in splitRows:
+    #     # 使用Ｘ軸來排序
+    #     boundles.append(sorted(bound, key=lambda bound: bound[0]))
+
+    return splitRows
 
 
 def DrawBoundle(boundle, img, columnLength):
+    k = 0
     for i in range(0, len(boundle)):
         for j in range(len(boundle[i])):
             x, y, width, height = boundle[i][j]
@@ -108,8 +116,9 @@ def DrawBoundle(boundle, img, columnLength):
             cv2.rectangle(img, (x, y),
                           (x + width,
                            y + height), (153, 153, 0), 2)
-            # cv2.putText(img, str((i*columnLength)+j), (x,y), cv2.FONT_HERSHEY_SIMPLEX,
-            #     0.5, (255, 255, 255), 1, cv2.LINE_AA)
+            cv2.putText(img, str(k), (x,y), cv2.FONT_HERSHEY_SIMPLEX,
+                0.5, (0, 255, 255), 1, cv2.LINE_AA)
+            k+=1
     return img
 
 

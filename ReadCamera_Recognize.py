@@ -11,16 +11,19 @@ from PIL import Image
 #所以要把歷史開獎期數存起來
 bingoPeriods = {}
 
-
+#現在的動畫類別與期數
+bingoNumber = Recaptcha_Lib.GetNextAni()
+print("現在期數：{bingoNum}".format(bingoNum=bingoNumber))
 def Record():
+	global bingoNumber
 	GetPeroids = False
 	
 	Start_time = time.time()
 
 	# 輸出結果
 	print(Start_time)
-	# 選擇第2隻攝影機
-	cap = cv2.VideoCapture(1)
+	# 選擇第3隻攝影機
+	cap = cv2.VideoCapture(2)
 
 	file_object = open('recognizeResult.txt', 'a')
 
@@ -39,13 +42,10 @@ def Record():
 		#每秒截一次圖
 		if i > 30:
 			if GetPeroids == False:
-				#現在的動畫類別與期數
-				bingoNumber = Recaptcha_Lib.GetNextAni()
-
-			
-				if len(bingoPeriods)>1:
-					#那就校正回下一個開獎號碼
-					bingoNumber = int(list(bingoPeriods.keys())[-1])+1
+				bingoNumber += 1
+				# if len(bingoPeriods)>1:
+				# 	#那就校正回下一個開獎號碼
+				# 	bingoNumber = int(list(bingoPeriods.keys())[-1])+1
 
 				#如果賓果號碼有要校正，到這邊就已經校正結束了，現在就能判斷最終要用什麼切圖邊界
 				imageType, recordTime = Recaptcha_Lib.fromBingoNumberGetImageType(bingoNumber)
