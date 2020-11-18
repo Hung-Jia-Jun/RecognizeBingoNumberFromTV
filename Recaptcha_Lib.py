@@ -258,6 +258,7 @@ def combineResult(img, imageType):
                                                  heightMin =heightMin, 
                                                  widthMax = widthMax,
                                                  heightMax =heightMax)
+    print ("output:" + str(output) )
     #每兩個數字為一排
     step = 2
     output = [output[i:i+step] for i in range(0, len(output), step)]
