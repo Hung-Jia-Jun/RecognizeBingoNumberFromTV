@@ -6,6 +6,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from Recaptcha_Lib import *
+import os
 from PIL import Image
 class Slider(QWidget):
 	def __init__(self,parent=None):
@@ -25,9 +26,11 @@ class Slider(QWidget):
 		self.area = (165, 320, 180, 385)
 
 		self.setWindowTitle("image process tool")
-		self.resize(300,100)
+		self.resize(250,300)
 		
-		self.layout = QVBoxLayout()
+		# self.layout = QVBoxLayout()
+		self.layout = QGridLayout()
+
 
 		self.comboBox = QComboBox(self)
 		self.comboBox.addItems(["格狀列表",
@@ -40,12 +43,12 @@ class Slider(QWidget):
                     "魚"])
         
 		self.comboBox.currentIndexChanged.connect(self.valuechange)
-		self.layout.addWidget(self.comboBox)
+		self.layout.addWidget(self.comboBox,0,0)
 
 		#讀取圖片
 		self.loadFile = QPushButton("Load File")
 		self.loadFile.clicked.connect(self.getFiles)
-		self.layout.addWidget(self.loadFile)
+		self.layout.addWidget(self.loadFile,0,1)
 
 		#二值化拉桿
 		self.threshValuebar = self.createQSliderBar(
@@ -118,23 +121,94 @@ class Slider(QWidget):
 
 
 		self.loadButton = QPushButton("load")
-		self.loadButton.move(64, 64)
+		self.loadButton.setFixedSize(150, 30)
 		self.loadButton.clicked.connect(self.loadValue)
-		self.layout.addWidget(self.loadButton)
+		self.layout.addWidget(self.loadButton,21,0)
 
 		self.saveButton = QPushButton("Save")
-		self.saveButton.move(64, 64)
+		self.saveButton.setFixedSize(150, 30)
 		self.saveButton.clicked.connect(self.saveConfig)
-		self.layout.addWidget(self.saveButton)
+		self.layout.addWidget(self.saveButton,21,1)
+		
+		self.pic = QLabel(self)
 
+		self.nextButton = QPushButton("Next")
+		self.nextButton.setFixedSize(150, 30)
+		self.nextButton.clicked.connect(self.nextImg)
+		self.layout.addWidget(self.nextButton,22,1)
+
+		self.previousButton = QPushButton("Previous")
+		self.previousButton.setFixedSize(150, 30)
+		self.previousButton.clicked.connect(self.previousImg)
+		self.layout.addWidget(self.previousButton, 22, 0)
+
+		QShortcut(Qt.Key_Right, self, self.nextImg)
+		QShortcut(Qt.Key_Left, self, self.previousImg)
+
+		#產生下一張圖的Generator
+		self.playNextImage = self.showNextImageByForloop()
+		
+		#產生上一張圖的Generator
+		self.playPreviousImage = self.showPreviousImageByForloop()
+		#圖片順序的Index
+		self.imageIndex = 0
+
+	def showImageAndLoadValue(self):
+
+		self.fname = self.filePath + "/{filename}.jpg".format(filename=str(self.imageIndex))
+		cv2.destroyAllWindows()
+		try:
+			self.img = Image.open(self.fname)
+			self.loadValue()
+			self.setFocus()
+		except:
+			pass
+	#顯示下一張圖片
+	def showNextImageByForloop(self):
+		
+		while True:
+			#初始化 index值
+			self.imageIndex = int(self.fname.split("/")[-1].replace(".jpg", ""))
+			if self.imageIndex < len(self.fileList):
+				self.imageIndex += 1
+			else:
+				self.imageIndex = len(self.fileList)
+			self.showImageAndLoadValue()
+			yield
+
+	#顯示上一張圖片
+	def showPreviousImageByForloop(self):
+		while True:
+			#初始化 index值
+			self.imageIndex = int(self.fname.split("/")[-1].replace(".jpg", ""))
+			if self.imageIndex < len(self.fileList):
+				self.imageIndex -= 1
+			else:
+				self.imageIndex = 0
+			self.showImageAndLoadValue()
+			yield
+
+	def nextImg(self):
+		try:
+			next(self.playNextImage)
+		except Exception as e:
+			pass
+	def previousImg(self):
+		try:
+			next(self.playPreviousImage)
+		except Exception as e:
+			pass
 	def getFiles(self):
 		global view
 		self.view = view
-		fname = QFileDialog.getOpenFileName(self, 'Open file',
-                                      '.', "Image files (*.jpg)")
+
+		self.fname = QFileDialog.getOpenFileName(self, 'Open file',
+                                      '.', "Image files (*.jpg)")[0]
 		cv2.destroyAllWindows()
+		self.filePath = '/'.join(self.fname.split("/")[:-1])
+		self.fileList = os.listdir(self.filePath)
 		try:
-			self.img = Image.open(fname[0])
+			self.img = Image.open(self.fname)
 		except:
 			pass
 		#更新介面
@@ -181,9 +255,30 @@ class Slider(QWidget):
 		print ("Save")
 		#更新介面
 		self.view.update()
+
+	def CV2QImage(self,cv_image):
+
+		width = cv_image.shape[1] #獲取圖片寬度
+		height = cv_image.shape[0]  #獲取圖片高度
+		
+		pixmap = QPixmap(width, height) #根據已知的高度和寬度新建一個空的QPixmap,
+		qimg = pixmap.toImage()  #將pximap轉換為QImage型別的qimg
+		
+		#迴圈讀取cv_image的每個畫素的r,g,b值，構成qRgb物件，再設定為qimg內指定位置的畫素
+		for row in range(0, height):
+			for col in range(0,width):
+				r = cv_image[row,col,0]
+				g = cv_image[row,col,1]
+				b = cv_image[row,col,2]
+				
+				pix = qRgb(r, g, b)
+				qimg.setPixel(col, row, pix)
+		
+		return qimg #轉換完成，返回
+
+
 	#載入設定檔
 	def loadValue(self):
-		
 		imageType = self.comboBox.currentText()
 		self.imageType = self.Ani[imageType]
 		_config = self.config[self.imageType]
@@ -230,9 +325,14 @@ class Slider(QWidget):
                                                             heightMax=heightMax)
 			recognizeResult, _ = combineResult(img=self.img,
                                       imageType=str(self.imageType))
-			print(recognizeResult)
+			print("len:" + str(len(recognizeResult.split(","))-1) + "," + recognizeResult)
+			
+			# self.pic.setPixmap(QPixmap(self.CV2QImage(secondSplitImg)))
+			# self.pic.show()
 			# # 顯示圖片
 			cv2.imshow('secondSplitImg', secondSplitImg)
+			cv2.moveWindow('secondSplitImg', 40, 30)
+
 
 			cv2.waitKey(1)
 
@@ -302,7 +402,7 @@ class Slider(QWidget):
 																	 heightMax=heightMax)
 			recognizeResult, _ = combineResult(img=self.img,
                                                    imageType=str(self.imageType))
-			print(recognizeResult)
+			print("len:" + str(len(recognizeResult.split(","))-1) +","+ recognizeResult)
 			# 顯示圖片
 			cv2.imshow('secondSplitImg', secondSplitImg)
 
