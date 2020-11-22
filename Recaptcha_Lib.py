@@ -59,12 +59,12 @@ def ImageFilter(width, height, widthMin, heightMin, widthMax, heightMax):
     #         or width*height > 400 or height <= widthMax or height > heightMax or height - width < 5:
 
 
-def boundleSort(contours, columnLength, imageType, 
+def boundleSort(contours, columnLength, imageType,
                 widthMin,
                 heightMin,
                 widthMax,
                 heightMax,):
-    
+
     #格狀列表要另外處理
     if imageType == "0":
         #做X軸排序（直向）
@@ -78,12 +78,12 @@ def boundleSort(contours, columnLength, imageType,
 
         #做Y軸排序（橫向）
         contours = sorted(contours, key=lambda ctr: cv2.boundingRect(ctr)[1])
-        
-   
+
+
 
     boundle = []
 
-  
+
     for i in range(0, len(contours)):
         x, y, width, height = cv2.boundingRect(contours[i])
         # 面積太小就算雜訊
@@ -184,12 +184,12 @@ def imageProcess(img, THRESH_BINARY_TYPE, threshValue, area, columnLength, image
     return boundle, imageProcessDone, secondSplitImg
 
 #顯示辨識結果
-def showRecognizeResult(img, THRESH_BINARY_TYPE, threshValue, area, columnLength, imageType, 
+def showRecognizeResult(img, THRESH_BINARY_TYPE, threshValue, area, columnLength, imageType,
                                                             widthMin,
                                                             heightMin,
                                                             widthMax,
-                                                            heightMax):         
-    
+                                                            heightMax):
+
     boundle, imageProcessDone, secondSplitImg = imageProcess(img=img,
                                                              THRESH_BINARY_TYPE=THRESH_BINARY_TYPE,
                                                              threshValue=threshValue,
@@ -224,14 +224,9 @@ def showRecognizeResult(img, THRESH_BINARY_TYPE, threshValue, area, columnLength
                                                                  predValue=predValue), newImage)
     return output, secondSplitImg
 
-#傳入圖片與圖片類型
-
-
-config = configparser.ConfigParser()
-config.read('config.ini')
-
-
 def combineResult(img, imageType):
+    config = configparser.ConfigParser()
+    config.read('config.ini')
     # print("Type:" + str(imageType))
     #圖片要辨識的類型，共八種
 
@@ -258,50 +253,50 @@ def combineResult(img, imageType):
     output, secondSplitImg = showRecognizeResult(img=img, THRESH_BINARY_TYPE=TYPE, threshValue=threshValue,
                                                  area=area, columnLength=columnLength, imageType=imageType,
                                                  widthMin = widthMin,
-                                                 heightMin =heightMin, 
+                                                 heightMin =heightMin,
                                                  widthMax = widthMax,
                                                  heightMax =heightMax)
     #每兩個數字為一排
     step = 2
-    output = [output[i:i+step] for i in range(0, len(output), step)]
+    _output = [output[i:i+step] for i in range(0, len(output), step)]
 
     #賽車與套圈圈的數字要做特別處理
     if imageType == "3" or imageType == "4":
         #因為有兩排，現在想先知道切片要切第一排與第二排要留多少
-        otherRowItemIndex = 10 - (20 - len(output))
-        # output.reverse()
+        otherRowItemIndex = 10 - (20 - len(_output))
         outFirstLine = []
         outSecondLine = []
 
-        for i in range(len(output)):
+        for i in range(len(_output)):
             try:
                 #輸出1,3,5,7,9 行，因為數字是直列下來的
                 if i % 2 == 1:
-                    outSecondLine.append(output[i])
+                    outSecondLine.append(_output[i])
                     # print (ele[0]+ele[1]+",",end='')
                 else:
                     if len(outFirstLine) < otherRowItemIndex:
-                        outFirstLine.append(output[i])
+                        outFirstLine.append(_output[i])
                     else:
                         #第二排的數字出來了，那就順位繼續
-                        outSecondLine.append(output[i])
+                        outSecondLine.append(_output[i])
             except:
                 continue
-        output = outSecondLine+outFirstLine
-        if len(output)==0:
+        _output = outSecondLine+outFirstLine
+        if len(_output)==0:
             # 轉換為 struct_time 格式的本地時間
             result = time.localtime(time.time())
             _img = cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2BGR)
             _img = cv2.cvtColor(cv2.UMat(_img), cv2.COLOR_RGB2GRAY)
             cv2.imwrite(".\\nonRecognize_image\\{i}_{time}.jpg".format(i=str(
                 imageType), time=str(result[3])+"-"+str(result[4])+"-"+str(result[5])), _img)
-   
+
+    if imageType == "bingoNumberRecognize":
+        return "".join(output), secondSplitImg
 
     outputStr = ""
-    for ele in output:
+    for ele in _output:
         try:
             outputStr += ele[0]+ele[1] + ","
-            # print(outputStr)
         except:
             continue
     return outputStr, secondSplitImg
@@ -317,12 +312,14 @@ def GetNextAni():
     soup = BeautifulSoup(r.text, 'html.parser')
     div = soup.find(id="lblBBDrawTerm")
     bingoNumber = int(div.text)
-    
+
     #返回現在動畫的類別與期數
     return bingoNumber
 
 
 def fromBingoNumberGetImageType(bingoNumber):
+    config = configparser.ConfigParser()
+    config.read('config.ini')
     nextBingoAniType = (bingoNumber + 2) % 8
     #因為每個動畫結束時間不一樣，所以要有一個config來設定要錄影多久
     #從啟動錄影這個Process開始要13秒才能正式啟動Opencv的imshow
