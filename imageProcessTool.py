@@ -153,6 +153,8 @@ class Slider(QWidget):
 		#圖片順序的Index
 		self.imageIndex = 0
 
+		#儲存之前的Bingo數字
+		self.bingoPeriods = []
 	def showImageAndLoadValue(self):
 
 		self.fname = self.filePath + "/{filename}.jpg".format(filename=str(self.imageIndex))
@@ -160,7 +162,7 @@ class Slider(QWidget):
 		try:
 			self.img = Image.open(self.fname)
 			self.loadValue()
-			self.setFocus()
+			# self.setFocus()
 		except:
 			pass
 	#顯示下一張圖片
@@ -256,29 +258,10 @@ class Slider(QWidget):
 		#更新介面
 		self.view.update()
 
-	def CV2QImage(self,cv_image):
-
-		width = cv_image.shape[1] #獲取圖片寬度
-		height = cv_image.shape[0]  #獲取圖片高度
-		
-		pixmap = QPixmap(width, height) #根據已知的高度和寬度新建一個空的QPixmap,
-		qimg = pixmap.toImage()  #將pximap轉換為QImage型別的qimg
-		
-		#迴圈讀取cv_image的每個畫素的r,g,b值，構成qRgb物件，再設定為qimg內指定位置的畫素
-		for row in range(0, height):
-			for col in range(0,width):
-				r = cv_image[row,col,0]
-				g = cv_image[row,col,1]
-				b = cv_image[row,col,2]
-				
-				pix = qRgb(r, g, b)
-				qimg.setPixel(col, row, pix)
-		
-		return qimg #轉換完成，返回
-
-
 	#載入設定檔
 	def loadValue(self):
+		#清空
+		self.bingoPeriods = []
 		imageType = self.comboBox.currentText()
 		self.imageType = self.Ani[imageType]
 		_config = self.config[self.imageType]
@@ -325,7 +308,17 @@ class Slider(QWidget):
                                                             heightMax=heightMax)
 			recognizeResult, _ = combineResult(img=self.img,
                                       imageType=str(self.imageType))
-			print("len:" + str(len(recognizeResult.split(","))-1) + "," + recognizeResult)
+									#經過檢查後，可以被加入list的數字
+			notRepeatNumber = []
+			for num in recognizeResult.split(","):
+				if num not in self.bingoPeriods:
+					#如果辨識到的字元不是空值，且單一字元數量為2的話，才算是一個數字
+					if num != "":
+						notRepeatNumber.append(num)
+			
+			for number in notRepeatNumber:
+				self.bingoPeriods.append(number)
+			print("len:" + str(len(self.bingoPeriods))+"," + ','.join(self.bingoPeriods))
 			
 			# self.pic.setPixmap(QPixmap(self.CV2QImage(secondSplitImg)))
 			# self.pic.show()
@@ -401,8 +394,20 @@ class Slider(QWidget):
 																	 widthMax=widthMax,
 																	 heightMax=heightMax)
 			recognizeResult, _ = combineResult(img=self.img,
-                                                   imageType=str(self.imageType))
-			print("len:" + str(len(recognizeResult.split(","))-1) +","+ recognizeResult)
+                                      imageType=str(self.imageType))
+			#經過檢查後，可以被加入list的數字
+			notRepeatNumber = []
+			for num in recognizeResult.split(","):
+				if num not in self.bingoPeriods:
+					#如果辨識到的字元不是空值，且單一字元數量為2的話，才算是一個數字
+					if num != "":
+						notRepeatNumber.append(num)
+
+			for number in notRepeatNumber:
+				self.bingoPeriods.append(number)
+			print("len:" + str(len(self.bingoPeriods)) +
+			      "," + ','.join(self.bingoPeriods))
+
 			# 顯示圖片
 			cv2.imshow('secondSplitImg', secondSplitImg)
 

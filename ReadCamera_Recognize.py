@@ -12,7 +12,7 @@ config = configparser.ConfigParser()
 config.read('config.ini')
 #因為要依照數字個別輸出
 #所以要把歷史開獎期數存起來
-bingoPeriods = {}
+bingoPeriods = []
 
 #現在的動畫類別與期數
 bingoNumber = Recaptcha_Lib.GetNextAni()
@@ -45,16 +45,13 @@ def Record():
 		#每秒截一次圖
 		if i > 30:
 			if GetPeroids == False:
-				# if len(bingoPeriods)>1:
-				# 	#那就校正回下一個開獎號碼
-				# 	bingoNumber = int(list(bingoPeriods.keys())[-1])+1
 
 				#判斷最終要用什麼切圖邊界
 				imageType, recordTime = Recaptcha_Lib.fromBingoNumberGetImageType(bingoNumber)
 				print("第{peroids}期，現在要開獎的動畫為：{aniType},預計錄製{recordTime}秒".format(
 					peroids=bingoNumber, aniType=Ani[str(imageType)], recordTime=recordTime))
 
-				bingoPeriods[bingoNumber] = []
+				bingoPeriods= []
 				GetPeroids = True
 
 			img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
@@ -75,23 +72,20 @@ def Record():
 			#因為不支援中文檔名，所以用imencode代替
 			cv2.imencode('.jpg', frame)[1].tofile(	"C:\\Users\\NO NAME\\Desktop\\ReadCamera\\out\\" + filename+".jpg")
 
-			i = 0
 			# print(recognizeResult)
 			#經過檢查後，可以被加入list的數字
 			notRepeatNumber = []
+			#控制每30個 frame 截圖一次的變數，不能動
+			i = 0
 			for num in recognizeResult.split(","):
-				if num not in bingoPeriods[bingoNumber]:
+				if num not in bingoPeriods:
 					#如果辨識到的字元不是空值，且單一字元數量為2的話，才算是一個數字
 					if num != "":
 						notRepeatNumber.append(num)
-			#同時間只有一組數字會被辨識到，超過一個數字辨識都是錯誤
-			# if len(notRepeatNumber) > 1:
-			# 	bingoPeriods[bingoNumber].append(notRepeatNumber[1])
-			# 	continue
 			for number in notRepeatNumber:
-				bingoPeriods[bingoNumber].append(number)
+				bingoPeriods.append(number)
 			print(str(bingoNumber) + ":" +
-			      str(len(bingoPeriods[bingoNumber]))+"," + ','.join(bingoPeriods[bingoNumber]))
+			      str(len(bingoPeriods))+"," + ','.join(bingoPeriods))
 			#因為辨識的夠清楚了，可以不用做篩選
 			# print(str(bingoNumber) + ":" + recognizeResult)
 
@@ -103,8 +97,8 @@ def Record():
 				#寫Log紀錄檔 期數與開獎號碼（不重複）
 				file_object.write("{bingoPeriodsNumber}-{imageName}:{bingoPeriodsLength}_{bingoNumber}\n".format(bingoPeriodsNumber=bingoNumber,
 																												imageName=Ani[str(imageType)],
-																												bingoPeriodsLength=str(len(bingoPeriods[bingoNumber])),
-																												bingoNumber=','.join(bingoPeriods[bingoNumber])))
+																												bingoPeriodsLength=str(len(bingoPeriods)),
+																												bingoNumber=','.join(bingoPeriods)))
 				# file_object.write(str(bingoNumber) + ":" + recognizeResult+"\n")
 				file_object.close()
 			except:
