@@ -69,7 +69,7 @@ def boundleSort(contours, columnLength, imageType,
     #x軸（橫向）
     #y軸（直向）
     #只有第一個格狀列表不用做排序
-    #做X軸排序（直向）
+    # 做X軸排序（直向）
     contours = sorted(contours, key=lambda ctr: cv2.boundingRect(ctr)[0])
 
     #做Y軸排序（橫向）
@@ -90,52 +90,52 @@ def boundleSort(contours, columnLength, imageType,
         boundle.append([x, y, width, height])
 
     #格狀列表要另外處理
-    if imageType == "0":
-        #兩兩配對的點
-        pairPoint = []
-        #把每個框點依照距離兩兩分組
-        for startBound in boundle:
-            distance = []
-            for endBound in boundle:
-                #點跟點做自己比較距離皆為0
-                if startBound != endBound:
-                    #sqrt((X-X1)**2 + (Y-Y2)**2)
-                    distance.append(sqrt((startBound[0]-endBound[0])**2\
-                                        + (startBound[1]-endBound[1])**2))
-                 
-            #此次比較中，最短的距離是多少
-            minDistance = min(distance)
-            for endBound in boundle:
-                #點跟點做自己比較距離皆為0
-                if startBound != endBound:
-                    #依照最短距離得出跟現在這個點最短的是誰
-                    if sqrt((startBound[0]-endBound[0])**2 \
-                            + (startBound[1]-endBound[1])**2) == minDistance:
-                        #依照X軸大小決定誰在前誰在後
-                        if startBound[0] > endBound[0]:
-                            #檢查這組配對有沒有在List裡面出現
-                            inList = False
-                            for pairBound in pairPoint:
-                                if startBound == pairBound[0]:
-                                    inList = True
-                            if inList == False:
-                                pairPoint.append([startBound, endBound])
-                        else:
-                            #檢查這組配對有沒有在List裡面出現
-                            inList = False
-                            for pairBound in pairPoint:
-                                if endBound == pairBound[0]:
-                                    inList = True
-                            if inList == False:
-                                pairPoint.append([endBound , startBound])
-        totalPoint = []
-        #把所有配對好的點位，變成一維的list
-        for point in pairPoint:
-            totalPoint.append(point[0])
-            totalPoint.append(point[1])
+    # if imageType == "0":
+    #兩兩配對的點
+    pairPoint = []
+    #把每個框點依照距離兩兩分組
+    for startBound in boundle:
+        distance = []
+        for endBound in boundle:
+            #點跟點做自己比較距離皆為0
+            if startBound != endBound:
+                #sqrt((X-X1)**2 + (Y-Y2)**2)
+                distance.append(sqrt((startBound[0]-endBound[0])**2\
+                                    + (startBound[1]-endBound[1])**2))
+                
+        #此次比較中，最短的距離是多少
+        minDistance = min(distance)
+        for endBound in boundle:
+            #點跟點做自己比較距離皆為0
+            if startBound != endBound:
+                #依照最短距離得出跟現在這個點最短的是誰
+                if sqrt((startBound[0]-endBound[0])**2 \
+                        + (startBound[1]-endBound[1])**2) == minDistance:
+                    #依照X軸大小決定誰在前誰在後
+                    if startBound[0] < endBound[0]:
+                        #檢查這組配對有沒有在List裡面出現
+                        inList = False
+                        for pairBound in pairPoint:
+                            if startBound == pairBound[0]:
+                                inList = True
+                        if inList == False:
+                            pairPoint.append([startBound, endBound])
+                    else:
+                        #檢查這組配對有沒有在List裡面出現
+                        inList = False
+                        for pairBound in pairPoint:
+                            if endBound == pairBound[0]:
+                                inList = True
+                        if inList == False:
+                            pairPoint.append([endBound , startBound])
+    totalPoint = []
+    #把所有配對好的點位，變成一維的list
+    for point in pairPoint:
+        totalPoint.append(point[0])
+        totalPoint.append(point[1])
 
-        #複寫掉原本的boundle的記憶體位置
-        boundle = totalPoint
+    #複寫掉原本的boundle的記憶體位置
+    boundle = totalPoint
    
     #list 分群
     splitRows = [boundle[i:i+columnLength] for i in range(0, len(boundle), columnLength)]
