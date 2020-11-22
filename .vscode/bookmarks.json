@@ -1,10 +1,10 @@
 [
 	{
-		"path": "$ROOTPATH$/imageProcessTool.py",
+		"path": "$ROOTPATH$/Recaptcha_Lib.py",
 		"bookmarks": [
 			{
-				"line": 20,
-				"column": 6,
+				"line": 98,
+				"column": 38,
 				"label": ""
 			}
 		]
