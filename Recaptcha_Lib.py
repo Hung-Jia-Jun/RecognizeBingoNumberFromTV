@@ -75,11 +75,7 @@ def boundleSort(contours, columnLength, imageType,
     #做Y軸排序（橫向）
     contours = sorted(contours, key=lambda ctr: cv2.boundingRect(ctr)[1])
 
-
-
     boundle = []
-
-
     for i in range(0, len(contours)):
         x, y, width, height = cv2.boundingRect(contours[i])
         # 面積太小就算雜訊
@@ -102,9 +98,11 @@ def boundleSort(contours, columnLength, imageType,
                 #sqrt((X-X1)**2 + (Y-Y2)**2)
                 distance.append(sqrt((startBound[0]-endBound[0])**2\
                                     + (startBound[1]-endBound[1])**2))
-                
-        #此次比較中，最短的距離是多少
-        minDistance = min(distance)
+        try:
+            #此次比較中，最短的距離是多少
+            minDistance = min(distance)
+        except:
+            continue
         for endBound in boundle:
             #點跟點做自己比較距離皆為0
             if startBound != endBound:
