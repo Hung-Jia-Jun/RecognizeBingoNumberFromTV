@@ -68,10 +68,11 @@ def Record():
 
 			# cv2.imwrite("C:\\Users\\NO NAME\\Desktop\\ReadCamera\\out\\" +
 			#             filename+".jpg", frame)
-
-			#因為不支援中文檔名，所以用imencode代替
-			cv2.imencode('.jpg', frame)[1].tofile(	"C:\\Users\\NO NAME\\Desktop\\ReadCamera\\out\\" + filename+".jpg")
-
+			try:
+				#因為不支援中文檔名，所以用imencode代替
+				cv2.imencode('.jpg', frame)[1].tofile(	"C:\\Users\\NO NAME\\Desktop\\ReadCamera\\out\\" + filename+".jpg")
+			except:
+				pass
 			# print(recognizeResult)
 			#經過檢查後，可以被加入list的數字
 			notRepeatNumber = []
@@ -102,8 +103,7 @@ def Record():
 				# file_object.write(str(bingoNumber) + ":" + recognizeResult+"\n")
 				file_object.close()
 			except:
-				import pdb
-				pdb.set_trace()
+				pass
 			break
 	# 釋放攝影機
 	cap.release()
@@ -130,7 +130,7 @@ while True:
 	print("目前時間: {hour}:{min}:{sec}" .format(hour = str(result[3]),
 												min = str(result[4]),
 												sec = str(result[5])))
-	time.sleep(1)
+	time.sleep(0.5)
 	#可以被5分鐘整除
 	if result[4] % 5 == 0:
 		if setStartTime == False:
