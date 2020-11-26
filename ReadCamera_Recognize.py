@@ -43,7 +43,7 @@ def Record():
 		cv2.waitKey(1)
 		i += 1
 		#每秒截一次圖
-		if i > 30:
+		if i > 15:
 			if GetPeroids == False:
 
 				#判斷最終要用什麼切圖邊界
@@ -73,18 +73,15 @@ def Record():
 				cv2.imencode('.jpg', frame)[1].tofile(	"C:\\Users\\NO NAME\\Desktop\\ReadCamera\\out\\" + filename+".jpg")
 			except:
 				pass
-			# print(recognizeResult)
 			#經過檢查後，可以被加入list的數字
-			notRepeatNumber = []
 			#控制每30個 frame 截圖一次的變數，不能動
 			i = 0
 			for num in recognizeResult.split(","):
 				if num not in bingoPeriods:
 					#如果辨識到的字元不是空值，且單一字元數量為2的話，才算是一個數字
 					if num != "":
-						notRepeatNumber.append(num)
-			for number in notRepeatNumber:
-				bingoPeriods.append(number)
+						bingoPeriods.append(num)
+				
 			print(str(bingoNumber) + ":" +
 			      str(len(bingoPeriods))+"," + ','.join(bingoPeriods))
 			#因為辨識的夠清楚了，可以不用做篩選

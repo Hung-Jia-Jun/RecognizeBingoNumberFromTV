@@ -17,8 +17,7 @@ class Slider(QWidget):
                     "套圈圈": "4",
                     "舞龍舞獅": "5",
                     "彩球": "6",
-                    "魚": "7",
-                    "期數辨識": "bingoNumberRecognize"}
+                    "魚": "7"}
 		self.config = configparser.ConfigParser()
 		#讀取/修改Config檔
 		self.config.read('config.ini')
@@ -41,8 +40,7 @@ class Slider(QWidget):
                     "套圈圈",
                     "舞龍舞獅",
                     "彩球",
-					"魚", 
-					"期數辨識"])
+                    "魚"])
         
 		self.comboBox.currentIndexChanged.connect(self.valuechange)
 		self.layout.addWidget(self.comboBox,0,0)
@@ -147,6 +145,11 @@ class Slider(QWidget):
 		QShortcut(Qt.Key_Right, self, self.nextImg)
 		QShortcut(Qt.Key_Left, self, self.previousImg)
 
+		#產生下一張圖的Generator
+		self.playNextImage = self.showNextImageByForloop()
+		
+		#產生上一張圖的Generator
+		self.playPreviousImage = self.showPreviousImageByForloop()
 		#圖片順序的Index
 		self.imageIndex = 0
 
@@ -208,6 +211,8 @@ class Slider(QWidget):
 		self.fileList = os.listdir(self.filePath)
 		try:
 			self.img = Image.open(self.fname)
+			#清空
+			self.bingoPeriods = []
 		except:
 			pass
 		#更新介面
@@ -257,15 +262,6 @@ class Slider(QWidget):
 
 	#載入設定檔
 	def loadValue(self):
-
-		#產生下一張圖的Generator
-		self.playNextImage = self.showNextImageByForloop()
-
-		#產生上一張圖的Generator
-		self.playPreviousImage = self.showPreviousImageByForloop()
-		
-		#清空
-		self.bingoPeriods = []
 		imageType = self.comboBox.currentText()
 		self.imageType = self.Ani[imageType]
 		_config = self.config[self.imageType]
@@ -340,7 +336,6 @@ class Slider(QWidget):
 			pass
 	def valuechange(self):
 		imageType = self.comboBox.currentText()
-		
 		threshValue = self.threshValuebar.value()
 		areaX_Start = self.areaX_Start.value()
 		areaX_End = self.areaX_End.value()
