@@ -19,7 +19,7 @@ import re
 import cv2
 import numpy as np
 import configparser
-
+import random
 model = load_model('Models/model.h5')
 
 
@@ -101,6 +101,9 @@ def boundleSort(contours, columnLength, imageType,
         try:
             #此次比較中，最短的距離是多少
             minDistance = min(distance)
+            #距離太遠就不要配對了，代表這可能是雜訊
+            if minDistance > 30:
+                continue
         except:
             continue
         for endBound in boundle:
@@ -256,8 +259,10 @@ def showRecognizeResult(img, THRESH_BINARY_TYPE, threshValue, area, columnLength
             input_dir = ("cut_image/")
             if not os.path.isdir(input_dir):
                 os.makedirs(input_dir)
-            cv2.imwrite("./cut_image/{i}_{predValue}.jpg".format(i=str(i),
-                                                                 predValue=predValue), newImage)
+            result = time.localtime(time.time())
+            cv2.imwrite("./cut_image/{i}_{predValue}_{random}.jpg".format(i=str(i),
+                                                                 predValue=predValue,
+                                                                 random=str(random.randint(1,10))), newImage)
     return output, secondSplitImg
 
 def combineResult(img, imageType):
@@ -364,21 +369,4 @@ def fromBingoNumberGetImageType(bingoNumber):
     recordTime = int(_config["recordTime"])
     return nextBingoAniType, recordTime
 if __name__ == "__main__":
-    import pdb; pdb.set_trace()
-    GetNextAni()
-    model = load_model('Models/model.h5')
-    #輸入程式啟動時，下一個是什麼圖形
-    firstPatten = int(input("請輸入下一個會顯示的動畫類型"))
-    for i in range(8):
-        imageType = firstPatten
-        img = Image.open(str(imageType) + '_2.jpg')
-        outputStr, secondSplitImg,recordTime = combineResult(img=img, imageType=str(imageType))
-        print (outputStr)
-        plt.imshow(secondSplitImg)
-        plt.title("secondSplitImg")
-        plt.show()
-        firstPatten += 1
-
-        #回到初始的類別
-        if firstPatten > 8:
-            firstPatten = 1
+    pass

@@ -323,8 +323,8 @@ class Slider(QWidget):
 			# self.pic.setPixmap(QPixmap(self.CV2QImage(secondSplitImg)))
 			# self.pic.show()
 			# # 顯示圖片
-			cv2.imshow('secondSplitImg', secondSplitImg)
-			cv2.moveWindow('secondSplitImg', 40, 30)
+			cv2.imshow(self.fname.split("/")[-1].split(".")[0], secondSplitImg)
+			cv2.moveWindow(self.fname.split("/")[-1].split(".")[0], 40, 30)
 
 
 			cv2.waitKey(1)
@@ -409,7 +409,9 @@ class Slider(QWidget):
 			      "," + ','.join(self.bingoPeriods))
 
 			# 顯示圖片
-			cv2.imshow('secondSplitImg', secondSplitImg)
+			cv2.imshow(self.fname.split("/")[-1].split(".")[0], secondSplitImg)
+			cv2.moveWindow(self.fname.split("/")[-1].split(".")[0], 40, 30)
+
 
 			cv2.waitKey(1)
 			self.resize(300, 100)

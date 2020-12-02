@@ -93,7 +93,7 @@ def Record():
 			print("已錄製{recordTime}秒".format(recordTime=recordTime))
 			try:
 				#寫Log紀錄檔 期數與開獎號碼（不重複）
-				file_object.write("{bingoPeriodsNumber}-{imageName}:{bingoPeriodsLength}_{bingoNumber}\n".format(bingoPeriodsNumber=bingoNumber,
+				file_object.write("{bingoPeriodsNumber},{imageName},{bingoPeriodsLength},{bingoNumber}\n".format(bingoPeriodsNumber=bingoNumber,
 																												imageName=Ani[str(imageType)],
 																												bingoPeriodsLength=str(len(bingoPeriods)),
 																												bingoNumber=','.join(bingoPeriods)))
@@ -113,7 +113,7 @@ Ani = {"0": "格狀列表",
 			"2": "動物農場",
 			"3": "賽車",
 			"4": "套圈圈",
-			"5": "舞龍舞獅",
+			"5": "舞龍舞獅", 
 			"6": "彩球",
 			"7": "魚"}
 
