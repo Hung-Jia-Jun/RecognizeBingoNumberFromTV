@@ -7,7 +7,7 @@ from datetime import datetime
 from keras.models import load_model
 from PIL import Image
 import configparser
-
+import random
 config = configparser.ConfigParser()
 config.read('config.ini')
 #因為要依照數字個別輸出
@@ -63,11 +63,13 @@ def Record():
 
 			cv2.waitKey(1)
 			
-			filename = "{bingoNumber}_{AniName}_{imageType}_{hour}_{min}_{sec}".format(
-				bingoNumber=bingoNumber, AniName=Ani[str(imageType)], imageType=imageType, hour=time.localtime().tm_hour, min=time.localtime().tm_min, sec=time.localtime().tm_sec)
-
-			# cv2.imwrite("C:\\Users\\NO NAME\\Desktop\\ReadCamera\\out\\" +
-			#             filename+".jpg", frame)
+			filename = "{bingoNumber}_{AniName}_{imageType}_{hour}_{min}_{sec}_{random}".format(bingoNumber=bingoNumber,
+																								AniName=Ani[str(imageType)],
+																								imageType=imageType,
+																								hour=time.localtime().tm_hour,
+																								min=time.localtime().tm_min,
+																								sec=time.localtime().tm_sec,
+																								random = str(random.randint(1,10)))
 			try:
 				#因為不支援中文檔名，所以用imencode代替
 				cv2.imencode('.jpg', frame)[1].tofile(	"C:\\Users\\NO NAME\\Desktop\\ReadCamera\\out\\" + filename+".jpg")
