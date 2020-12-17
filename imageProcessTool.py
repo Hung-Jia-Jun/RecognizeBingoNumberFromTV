@@ -6,7 +6,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from Recaptcha_Lib import *
-import os
+import os,glob
 from PIL import Image
 class Slider(QWidget):
 	def __init__(self,parent=None):
@@ -129,7 +129,7 @@ class Slider(QWidget):
 		self.saveButton.setFixedSize(150, 30)
 		self.saveButton.clicked.connect(self.saveConfig)
 		self.layout.addWidget(self.saveButton,21,1)
-		
+
 		self.pic = QLabel(self)
 
 		self.nextButton = QPushButton("Next")
@@ -141,9 +141,22 @@ class Slider(QWidget):
 		self.previousButton.setFixedSize(150, 30)
 		self.previousButton.clicked.connect(self.previousImg)
 		self.layout.addWidget(self.previousButton, 22, 0)
+		
+		self.continuousButton = QPushButton("continuous")
+		self.continuousButton.setFixedSize(150, 30)
+		self.continuousButton.clicked.connect(self.continuousImg)
+		self.layout.addWidget(self.continuousButton,23,0)
 
-		QShortcut(Qt.Key_Right, self, self.nextImg)
-		QShortcut(Qt.Key_Left, self, self.previousImg)
+		self.stopButton = QPushButton("stop")
+		self.stopButton.setFixedSize(150, 30)
+		self.stopButton.clicked.connect(self.stopContinuous)
+		self.layout.addWidget(self.stopButton,23,1)
+
+		#更新資料夾裡面的檔名
+		self.saveButton = QPushButton("Init folder")
+		self.saveButton.setFixedSize(150, 30)
+		self.saveButton.clicked.connect(self.initFolder)
+		self.layout.addWidget(self.saveButton,24,0)
 
 		#產生下一張圖的Generator
 		self.playNextImage = self.showNextImageByForloop()
@@ -153,21 +166,26 @@ class Slider(QWidget):
 		#圖片順序的Index
 		self.imageIndex = 0
 
-		#儲存之前的Bingo數字
+		#儲存Bingo數字
 		self.bingoPeriods = []
+		
+		#儲存之前的Bingo數字
+		self.privousBingoPeriods = []
 	def showImageAndLoadValue(self):
-
 		self.fname = self.filePath + "/{filename}.jpg".format(filename=str(self.imageIndex))
 		cv2.destroyAllWindows()
 		try:
 			self.img = Image.open(self.fname)
-			self.loadValue()
+			result = self.loadValue()
+			if result == "Event alert":
+				return "Event alert"
+			return None
 			# self.setFocus()
-		except:
+		except Exception as e:
+			print (e)
 			pass
 	#顯示下一張圖片
 	def showNextImageByForloop(self):
-		
 		while True:
 			#初始化 index值
 			self.imageIndex = int(self.fname.split("/")[-1].replace(".jpg", ""))
@@ -194,12 +212,40 @@ class Slider(QWidget):
 		try:
 			next(self.playNextImage)
 		except Exception as e:
+			self.playNextImage = self.showNextImageByForloop()
 			pass
+
+	#持續運行下一張圖片
+	def continuousImg(self):
+		self.continuous = True
+		self.fileList = os.listdir(self.filePath)
+		for i in range(len(self.fileList)):
+			try:
+				if self.continuous == False:
+					break
+				result = next(self.playNextImage)
+				if result == "Event alert":
+					print ("數字突然加2可能有問題")
+					break
+			except Exception as e:
+				pass
+	
+	#停止連續運行模式
+	def stopContinuous(self):
+		self.continuous = False
+		
 	def previousImg(self):
 		try:
 			next(self.playPreviousImage)
 		except Exception as e:
 			pass
+
+	#重新命名資料夾內依照時間排序的檔案
+	def initFolder(self):
+		i = 0
+		for file in self.fileList:
+			os.rename(file, self.filePath+"/" + str(i)+".jpg")
+			i+=1
 	def getFiles(self):
 		global view
 		self.view = view
@@ -208,7 +254,11 @@ class Slider(QWidget):
                                       '.', "Image files (*.jpg)")[0]
 		cv2.destroyAllWindows()
 		self.filePath = '/'.join(self.fname.split("/")[:-1])
-		self.fileList = os.listdir(self.filePath)
+
+		#依照建立日期排序
+		files = glob.glob(self.filePath+"/*.jpg")
+		files.sort(key=os.path.getmtime)
+		self.fileList = files
 		try:
 			self.img = Image.open(self.fname)
 			#清空
@@ -309,6 +359,7 @@ class Slider(QWidget):
 			recognizeResult, _ = combineResult(img=self.img,
                                       imageType=str(self.imageType))
 									#經過檢查後，可以被加入list的數字
+			
 			notRepeatNumber = []
 			for num in recognizeResult.split(","):
 				if num not in self.bingoPeriods:
@@ -318,8 +369,11 @@ class Slider(QWidget):
 			
 			for number in notRepeatNumber:
 				self.bingoPeriods.append(number)
-			print("len:" + str(len(self.bingoPeriods))+"," + ','.join(self.bingoPeriods))
-			
+
+			#如果上一個預測結果跟現在的預測結果不同
+			#有兩種情況
+			# 1. 數字增加了（正常）
+			# 2. 這次辨識反而數字減少了（可能有問題）
 			# self.pic.setPixmap(QPixmap(self.CV2QImage(secondSplitImg)))
 			# self.pic.show()
 			# # 顯示圖片
@@ -329,6 +383,16 @@ class Slider(QWidget):
 
 			cv2.waitKey(1)
 
+			if len(self.privousBingoPeriods) != len(self.bingoPeriods):
+				#回報差異的數字
+				diff =  list(set(self.bingoPeriods)-set(self.privousBingoPeriods))
+				#數字改變了，先去儲存上一個
+				self.privousBingoPeriods = self.bingoPeriods
+				print("len:" + str(len(self.bingoPeriods))+"," + ','.join(self.bingoPeriods))
+				return diff
+				
+			print("len:" + str(len(self.bingoPeriods))+"," + ','.join(self.bingoPeriods))
+			
 			
 		except Exception as e:
 			print(traceback.format_exc())
