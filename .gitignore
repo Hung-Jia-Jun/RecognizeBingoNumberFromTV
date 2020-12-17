@@ -8,7 +8,11 @@ __pycache__/
 *.txt
 *.sql
 
+*.db
+bookmarks.json
+
 *.jpg
+*.ini
 
 # Distribution / packaging
 .Python
