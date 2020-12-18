@@ -1,10 +1,10 @@
 [
 	{
-		"path": "$ROOTPATH$/imageProcessTool.py",
+		"path": "$ROOTPATH$/ReadCamera_Recognize.py",
 		"bookmarks": [
 			{
-				"line": 133,
-				"column": 50,
+				"line": 96,
+				"column": 8,
 				"label": ""
 			}
 		]

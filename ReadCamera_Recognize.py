@@ -8,6 +8,9 @@ from keras.models import load_model
 from PIL import Image
 import configparser
 import random
+import shutil
+import os
+from DB_write import *
 config = configparser.ConfigParser()
 config.read('config.ini')
 #因為要依照數字個別輸出
@@ -17,8 +20,15 @@ bingoPeriods = []
 #現在的動畫類別與期數
 bingoNumber = Recaptcha_Lib.GetNextAni()
 print("現在期數：{bingoNum}".format(bingoNum=bingoNumber))
+Database = Database()
+
+img_config = config["imageFolder"]
+
+#取得圖片存檔資料夾
+imageOut = img_config["out"]
+
 def Record():
-	global bingoNumber
+	global bingoNumber,Database,imageOut
 	GetPeroids = False
 	
 	Start_time = time.time()
@@ -29,7 +39,6 @@ def Record():
 	cap = cv2.VideoCapture(2)
 
 	file_object = open('recognizeResult.txt', 'a')
-
 	#預設等待時間
 	recordTime = 60
 	i = 0
@@ -72,7 +81,7 @@ def Record():
 																								random = str(random.randint(1,10)))
 			try:
 				#因為不支援中文檔名，所以用imencode代替
-				cv2.imencode('.jpg', frame)[1].tofile(	"C:\\Users\\NO NAME\\Desktop\\ReadCamera\\out\\" + filename+".jpg")
+				cv2.imencode('.jpg', frame)[1].tofile(imageOut + filename+".jpg")
 			except:
 				pass
 			#經過檢查後，可以被加入list的數字
@@ -83,7 +92,8 @@ def Record():
 					#如果辨識到的字元不是空值，且單一字元數量為2的話，才算是一個數字
 					if num != "":
 						bingoPeriods.append(num)
-				
+			#更新資料庫的辨識數據
+			Database.updateDB(gameID=bingoNumber,gameNumbers=','.join(bingoPeriods))
 			print(str(bingoNumber) + ":" +
 			      str(len(bingoPeriods))+"," + ','.join(bingoPeriods))
 			#因為辨識的夠清楚了，可以不用做篩選
@@ -119,6 +129,7 @@ Ani = {"0": "格狀列表",
 			"6": "彩球",
 			"7": "魚"}
 
+
 #控制只執行一次去讀取要開始錄影的時間
 setStartTime = False
 while True:
@@ -129,6 +140,14 @@ while True:
 	print("目前時間: {hour}:{min}:{sec}" .format(hour = str(result[3]),
 												min = str(result[4]),
 												sec = str(result[5])))
+
+												#清空圖片資料夾
+	#每八小時又一分鐘清空一次圖片資料夾
+	#不然依照這個迴圈,他在8小時後的第九個小時內會一直清空資料夾
+	if result[3] % 8 == 0 and result[4] == 1:
+		shutil.rmtree(imageOut)
+		#再重新新增圖片資料夾
+		os.mkdir(imageOut)
 	time.sleep(0.5)
 	#可以被5分鐘整除
 	if result[4] % 5 == 0:
