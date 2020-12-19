@@ -8,5 +8,15 @@
 				"label": ""
 			}
 		]
+	},
+	{
+		"path": "$ROOTPATH$/DB_write.py",
+		"bookmarks": [
+			{
+				"line": 74,
+				"column": 32,
+				"label": ""
+			}
+		]
 	}
 ]
