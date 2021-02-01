@@ -33,16 +33,12 @@ class Database:
 		self.user = _config["user"]
 		self.password = _config["password"]
 		self.dbType = _config["dbType"]
-		if self.dbType == "mysql+pymysql":
-			self.connectStr = '{dbType}://{user}:{password}@{host}/{database}'.format(host = self.host,
-																			database = self.database,
-																			user = self.user,
-																			password = self.password,
-																			dbType = self.dbType)
-			self.engine = create_engine(self.connectStr)
-		else:
-			#使用本機的local host sqlite db
-			self.engine = create_engine('sqlite:///recognize_db.db')
+		self.connectStr = '{dbType}://{user}:{password}@{host}/{database}'.format(host = self.host,
+																		database = self.database,
+																		user = self.user,
+																		password = self.password,
+																		dbType = self.dbType)
+		self.engine = create_engine(self.connectStr)
 		Base.metadata.bind = self.engine
 		# 建立Session
 		DBSession = sessionmaker(bind=self.engine)
@@ -52,14 +48,24 @@ class Database:
 		# 查詢
 		game = self.session.query(Bingo).filter(Bingo.Bingo_Period == gameID).first()
 		
+		#由小到大排序數字
 		Bingo_Num_li = sorted([int(x) for x in gameNumbers.split(",")])
 		Bingo_Num_str = [str(x) for x in Bingo_Num_li]
-		#由小到大排序數字
-		Bingo_Num = ','.join(Bingo_Num_str)
+
+		Bingo_Num = ''
+		for num in Bingo_Num_str:
+			#小於10前面要補零
+			if int(num)<10:
+				num = "0" + num
+			Bingo_Num += num+','
+		# Bingo_Num = ','.join(Bingo_Num_str)
 		#取得現在時間
 		now = time.localtime(time.time())
 		DrawDate = datetime.now().date()
-		DrawDT = "{mm}:{ss}".format(mm=now[3],ss=now[4])
+		if now[4] < 10:
+			DrawDT = "{hh}:{mm}".format(hh=now[3],mm = "0" + str(now[4]))
+		else:
+			DrawDT = "{hh}:{mm}".format(hh=now[3],mm=now[4])
 		if game == None:
 			#開獎期數 : Bingo_Period
 			#開獎號碼由小到大排序 : Bingo_Num
